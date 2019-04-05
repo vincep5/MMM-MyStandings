@@ -1,0 +1,47 @@
+{% if standings %}
+	<table class="{{ config.tableClass }}">
+		{% for league in standings %}
+			{% if league != null %}
+				{% for division in league.children %}
+					{% if division != null %}
+						<tr class="league-separator">
+							<td colspan="2"><span>{% if division.shortName != undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
+						{% if currentSport === "NHL" %}
+							<td>W</td><td>L</td><td>OTL</td><td>PTS</td>
+						{% elseif currentSport === "MLB"%}
+							<td>W</td><td>L</td><td>GB</td>
+						{% elseif currentSport === "NBA"%}
+							<td>W</td><td>L</td><td>GB</td>
+						{% elseif currentSport === "NFL"%}
+							<td>W</td><td>L</td><td>T</td>
+						{% endif %}
+						</tr>
+						{% for tm in division.standings.entries %}
+							<tr>
+								<td class="logo"><img src="{{tm.team.logos[0].href}}" class="logo"/></td>
+								{% if config.nameStyle === "short" %}
+									<td>{{tm.team.shortDisplayName}}</td>
+								{% elseif config.nameStyle === "full" %}
+									<td>{{tm.team.displayName}}</td>
+								{% elseif config.nameStyle === "abbreviation" %}
+									<td>{{tm.team.abbreviation}}</td>
+								{% endif %}
+								{% for stat in tm.stats %}
+									{% if stat.name === "gamesBehind" and stat.value == 0 %}
+										<td>-</td>
+									{% else %}
+										<td>{{stat.value}}</td>
+									{% endif %}
+								{% endfor %}
+							</tr>
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+			{% endif %}
+		{% endfor %}
+	</table>
+{% else %}
+	<div class="dimmed light small">
+		{{ "LOADING" | translate | safe }}
+	</div>
+{% endif %}
