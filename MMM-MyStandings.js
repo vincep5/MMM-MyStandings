@@ -115,11 +115,11 @@ Module.register("MMM-MyStandings",{
 
 	rotateStandings: function() {
 		// If we don't have any data, do not try to load the UI
-		if (this.standingsInfo === undefined || this.standingsInfo === null) {
+		if (this.standingsInfo === undefined || this.standingsInfo === null || this.standingsInfo.length == 0) {
 			return;
 		}
 
-		// If we only have 1 sport, load it once and then don't try re loading again.
+		// If we only have 1 sport, load it once and then do not try re loading again.
 		if (this.isLoaded == true && this.standingsInfo.length == 1) {
 			return;
 		}
@@ -135,7 +135,7 @@ Module.register("MMM-MyStandings",{
 		this.ctRotate = this.ctRotate + 1;
 	},
 
-	// For sake of size of the arrays, let's remove items that we dont particularly care about
+	// For sake of size of the arrays, let us remove items that we do not particularly care about
 	cleanupData: function(standingsObject, sport) {
 		var g,h,i,j;
 		//leagues or conferences
