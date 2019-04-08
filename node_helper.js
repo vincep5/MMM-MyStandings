@@ -22,7 +22,7 @@ module.exports = NodeHelper.create({
 				console.log("MMM-MyStandings : Could not load data.");
 			}
 		});
-  },
+	},
 
 	//Subclass socketNotificationReceived received.
 	socketNotificationReceived: function(notification, payload) {

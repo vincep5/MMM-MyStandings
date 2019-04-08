@@ -1,3 +1,9 @@
+.MMM-MyStandings .standings {
+	border-collapse: collapse;
+	font-size: 20px;
+	line-height: 30px;
+}
+
 .MMM-MyStandings .logo {
 	width: 24px;
 	height: 24px;

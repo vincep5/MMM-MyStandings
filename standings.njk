@@ -1,5 +1,5 @@
 {% if standings %}
-	<table class="{{ config.tableClass }}">
+	<table class="standings">
 		{% for league in standings %}
 			{% if league != null %}
 				{% for division in league.children %}
@@ -18,7 +18,11 @@
 						</tr>
 						{% for tm in division.standings.entries %}
 							<tr>
-								<td class="logo"><img src="{{tm.team.logos[0].href}}" class="logo"/></td>
+								{% if config.showLogos === true %}
+									<td class="logo"><img src="{{tm.team.logos[0].href}}" class="logo"/></td>
+								{% else %}
+									<td></td>
+								{% endif %}
 								{% if config.nameStyle === "short" %}
 									<td>{{tm.team.shortDisplayName}}</td>
 								{% elseif config.nameStyle === "full" %}

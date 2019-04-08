@@ -15,7 +15,7 @@ Module.register("MMM-MyStandings",{
 			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] }
 		],
 		nameStyle: "short", // "abbreviation", "full", or "short"
-		tableClass: "small",
+		showLogos: true,
 		fadeSpeed: 2000,
 	},
 
