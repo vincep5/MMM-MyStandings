@@ -10,12 +10,13 @@ Module.register("MMM-MyStandings",{
 		url: "http://site.web.api.espn.com/apis/v2/sports/",
 		sports: [
 			{ league: "NBA", groups: ["Atlantic", "Central", "Southeast", "Northwest", "Pacific", "Southwest"] },
-			{ league: "MLB", groups: ["American League East", "American League Central", "American League West","National League East", "National League Central", "National League West"] },
-			{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West","NFC East", "NFC North", "NFC South", "NFC West"] },
+			{ league: "MLB", groups: ["American League East", "American League Central", "American League West", "National League East", "National League Central", "National League West"] },
+			{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West", "NFC East", "NFC North", "NFC South", "NFC West"] },
 			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] }
 		],
 		nameStyle: "short", // "abbreviation", "full", or "short"
 		showLogos: true,
+		showByDivision: true, // true, then display one division at a time.  false, display all divisions per sport
 		fadeSpeed: 2000,
 	},
 
@@ -24,11 +25,25 @@ Module.register("MMM-MyStandings",{
 	standingsInfo: [],
 	standingsSportInfo: [],
 	ctRotate: 0,
+	ctDivision: 0,
 	currentSport: null,
+	currentDivision: null,
 	isLoaded: false,
 
 	// Start the module.
 	start: function () {
+		// Set some default for groups if not found in user config
+		for (var league in this.config.sports) {
+			if (this.config.sports[league].groups === undefined) {
+				for (var leagueDefault in this.defaults.sports) {
+					if (this.defaults.sports[leagueDefault].league === this.config.sports[league].league) {
+						this.config.sports[league].groups = this.defaults.sports[leagueDefault].groups;
+						break;
+					}
+				}
+			}
+		}
+
 		this.getData(false);
 		// Schedule the first update.
 		this.scheduleUpdate();
@@ -62,6 +77,7 @@ Module.register("MMM-MyStandings",{
 			config: this.config,
 			standings: this.standings,
 			currentSport: this.currentSport,
+			currentDivision: this.currentDivision,
 		}
 	},
 
@@ -115,12 +131,7 @@ Module.register("MMM-MyStandings",{
 
 	rotateStandings: function() {
 		// If we don't have any data, do not try to load the UI
-		if (this.standingsInfo === undefined || this.standingsInfo === null || this.standingsInfo.length == 0) {
-			return;
-		}
-
-		// If we only have 1 sport, load it once and then do not try re loading again.
-		if (this.isLoaded == true && this.standingsInfo.length == 1) {
+		if (this.standingsInfo === undefined || this.standingsInfo === null || this.standingsInfo.length === 0) {
 			return;
 		}
 
@@ -130,9 +141,42 @@ Module.register("MMM-MyStandings",{
 
 		this.standings = this.standingsInfo[this.ctRotate];
 		this.currentSport = this.standingsSportInfo[this.ctRotate];
-		this.updateDom(this.config.fadeSpeed);
-		this.isLoaded = true;
-		this.ctRotate = this.ctRotate + 1;
+
+		if (this.config.showByDivision) {
+			// If we only have 1 sport and 1 division, load it once and then do not try re loading again.
+			if (this.isLoaded === true && this.standingsInfo.length === 1 && this.ctDivision === 0) {
+				return;
+			}
+
+			var isLastDivisionInSport = false;
+
+			for (var league in this.config.sports) {
+				if (this.config.sports[league].league === this.currentSport) {
+					if (this.ctDivision === this.config.sports[league].groups.length - 1) {
+						isLastDivisionInSport = true;
+					}
+				}
+			}
+
+			this.currentDivision = this.config.sports[this.ctRotate].groups[this.ctDivision];
+			this.updateDom(this.config.fadeSpeed);
+			this.isLoaded = true;
+			this.ctDivision = this.ctDivision + 1;
+
+			if (isLastDivisionInSport) {
+				this.ctDivision = 0;
+				this.ctRotate = this.ctRotate + 1;
+			}
+		} else {
+			// If we only have 1 sport, load it once and then do not try re loading again.
+			if (this.isLoaded === true && this.standingsInfo.length === 1) {
+				return;
+			}
+
+			this.updateDom(this.config.fadeSpeed);
+			this.isLoaded = true;
+			this.ctRotate = this.ctRotate + 1;
+		}
 	},
 
 	// For sake of size of the arrays, let us remove items that we do not particularly care about
@@ -143,22 +187,17 @@ Module.register("MMM-MyStandings",{
 			//divisions
 			for (h = 0; h < standingsObject[g].children.length; h++) {
 				var hasMatch = false;
-				var hasGroup = false;
 
 				// We only want to show divisions/groups that we have configured
 				for (var league in this.config.sports) {
-					if (this.config.sports[league].league == sport) {
-						if (this.config.sports[league].groups !== undefined) {
-							hasGroup = true;
-						}
-					
+					if (this.config.sports[league].league === sport) {
 						if (this.config.sports[league].groups !== undefined && this.config.sports[league].groups.includes(standingsObject[g].children[h].name)) {
 							hasMatch = true;
 						}
 					}
 				}
 
-				if (hasMatch ===  false && hasGroup) {
+				if (hasMatch === false) {
 					standingsObject[g].children[h] = null;
 					continue;
 				}
@@ -175,32 +214,32 @@ Module.register("MMM-MyStandings",{
 						{
 							switch (entry.name) {
 								case "wins":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 1,
 									value: newEntry
 								});
 								break;
 								case "losses":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 2,
 									value: newEntry
 								});
 								break;
 								case "otLosses":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 3,
 									value: newEntry
 								});
 								break;
 								case "points":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 4,
 									value: newEntry
@@ -212,24 +251,24 @@ Module.register("MMM-MyStandings",{
 						{
 							switch (entry.name) {
 								case "wins":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 1,
 									value: newEntry
 								});
 								break;
 								case "losses":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 2,
 									value: newEntry
 								});
 								break;
 								case "gamesBehind":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.displayValue;
 								newStats.push({
 									key: 3,
 									value: newEntry
@@ -241,24 +280,24 @@ Module.register("MMM-MyStandings",{
 						{
 							switch (entry.name) {
 								case "wins":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 1,
 									value: newEntry
 								});
 								break;
 								case "losses":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 2,
 									value: newEntry
 								});
 								break;
 								case "gamesBehind":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.displayValue;
 								newStats.push({
 									key: 3,
 									value: newEntry
@@ -270,24 +309,24 @@ Module.register("MMM-MyStandings",{
 						{
 							switch (entry.name) {
 								case "wins":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 1,
 									value: newEntry
 								});
 								break;
 								case "losses":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 2,
 									value: newEntry
 								});
 								break;
 								case "ties":
-								newEntry.name = entry.name
-								newEntry.value = entry.value
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
 								newStats.push({
 									key: 3,
 									value: newEntry
@@ -304,14 +343,14 @@ Module.register("MMM-MyStandings",{
 							return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 						});
 					}
-					
+
 					newStats = sortByKey(newStats, 'key');
 
 					var finalValues = [];
 					for (var key in newStats) {
 						finalValues.push(newStats[key].value);
 					}
-					
+
 					standingsObject[g].children[h].standings.entries[i].stats = finalValues;
 				}
 			}

@@ -1,3 +1,8 @@
+.MMM-MyStandings {
+	min-width: 300px;
+	margin-top: 10px;
+}
+
 .MMM-MyStandings .standings {
 	border-collapse: collapse;
 	font-size: 20px;
@@ -19,7 +24,7 @@
 	padding: 0;
 }
 
-.MMM-MyStandings .league-separator > td >span {
+.MMM-MyStandings .league-separator > td > span {
 	color: #000;
 	font-weight: bold;
 	padding-left: 6px;

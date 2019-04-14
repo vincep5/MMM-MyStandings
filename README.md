@@ -20,19 +20,21 @@ Add `MMM-MyStandings` module to the `modules` array in the `config/config.js` fi
 ````javascript
 modules: [
   {
-    module: "MMM-MyStandings",
-    position: "top_right",
-    config: {
-		rotateInterval: 1 * 60 * 1000, // every 1 minute
-		sports: [
-			{ league: "NBA", groups: ["Atlantic", "Central", "Southeast", "Northwest", "Pacific", "Southwest"] },
-			{ league: "MLB", groups: ["American League East", "American League Central", "American League West","National League East", "National League Central", "National League West"] },
-			{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West","NFC East", "NFC North", "NFC South", "NFC West"] },
-			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] }
-		],
-		nameStyle: "short", // "abbreviation", "full", or "short"
-		fadeSpeed: 2000,
-    }
+		module: "MMM-MyStandings",
+		position: "top_right",
+		config: {
+			rotateInterval: 1 * 60 * 1000, // every 1 minute
+			sports: [
+				{ league: "NBA", groups: ["Atlantic", "Central", "Southeast", "Northwest", "Pacific", "Southwest"] },
+				{ league: "MLB", groups: ["American League East", "American League Central", "American League West", "National League East", "National League Central", "National League West"] },
+				{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West", "NFC East", "NFC North", "NFC South", "NFC West"] },
+				{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] }
+			],
+			nameStyle: "short", // "abbreviation", "full", or "short"
+			showLogos: true,
+			showByDivision: true, // true, then display one division at a time.  false, display all divisions per sport
+			fadeSpeed: 2000,
+		}
   }
 ]
 ````

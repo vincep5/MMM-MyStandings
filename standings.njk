@@ -4,8 +4,9 @@
 			{% if league != null %}
 				{% for division in league.children %}
 					{% if division != null %}
+					{% if config.showByDivision === false or (config.showByDivision and currentDivision === division.name) %}
 						<tr class="league-separator">
-							<td colspan="2"><span>{% if division.shortName != undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
+							<td colspan="2"><span>{% if division.shortName !== undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
 						{% if currentSport === "NHL" %}
 							<td>W</td><td>L</td><td>OTL</td><td>PTS</td>
 						{% elseif currentSport === "MLB"%}
@@ -31,14 +32,11 @@
 									<td>{{tm.team.abbreviation}}</td>
 								{% endif %}
 								{% for stat in tm.stats %}
-									{% if stat.name === "gamesBehind" and stat.value == 0 %}
-										<td>-</td>
-									{% else %}
-										<td>{{stat.value}}</td>
-									{% endif %}
+									<td>{{stat.value}}</td>
 								{% endfor %}
 							</tr>
 						{% endfor %}
+					{% endif %}
 					{% endif %}
 				{% endfor %}
 			{% endif %}
