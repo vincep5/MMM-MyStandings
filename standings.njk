@@ -1,44 +1,42 @@
 {% if standings %}
 	<table class="standings">
-		{% for league in standings %}
-			{% if league != null %}
-				{% for division in league.children %}
-					{% if division != null %}
-					{% if config.showByDivision === false or (config.showByDivision and currentDivision === division.name) %}
-						<tr class="league-separator">
-							<td colspan="2"><span>{% if division.shortName !== undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
-						{% if currentSport === "NHL" %}
-							<td>W</td><td>L</td><td>OTL</td><td>PTS</td>
-						{% elseif currentSport === "MLB"%}
-							<td>W</td><td>L</td><td>GB</td>
-						{% elseif currentSport === "NBA"%}
-							<td>W</td><td>L</td><td>GB</td>
-						{% elseif currentSport === "NFL"%}
-							<td>W</td><td>L</td><td>T</td>
+		{% for division in standings %}
+			{% if division != null %}
+			{% if config.showByDivision === false or (config.showByDivision and currentDivision === division.name) %}
+				<tr class="league-separator">
+					<td colspan="2"><span>{% if division.shortName !== undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
+				{% if currentSport === "NHL" %}
+					<td>W</td><td>L</td><td>OTL</td><td>PTS</td>
+				{% elseif currentSport === "MLB"%}
+					<td>W</td><td>L</td><td>GB</td>
+				{% elseif currentSport === "NBA"%}
+					<td>W</td><td>L</td><td>GB</td>
+				{% elseif currentSport === "NFL"%}
+					<td>W</td><td>L</td><td>T</td>
+				{% elseif currentSport === "MLS"%}
+					<td>W</td><td>T</td><td>L</td><td>PTS</td>
+				{% endif %}
+				</tr>
+				{% for tm in division.standings.entries %}
+					<tr>
+						{% if config.showLogos === true %}
+							<td class="logo"><img src="{{tm.team.logos[0].href}}" class="logo"/></td>
+						{% else %}
+							<td></td>
 						{% endif %}
-						</tr>
-						{% for tm in division.standings.entries %}
-							<tr>
-								{% if config.showLogos === true %}
-									<td class="logo"><img src="{{tm.team.logos[0].href}}" class="logo"/></td>
-								{% else %}
-									<td></td>
-								{% endif %}
-								{% if config.nameStyle === "short" %}
-									<td>{{tm.team.shortDisplayName}}</td>
-								{% elseif config.nameStyle === "full" %}
-									<td>{{tm.team.displayName}}</td>
-								{% elseif config.nameStyle === "abbreviation" %}
-									<td>{{tm.team.abbreviation}}</td>
-								{% endif %}
-								{% for stat in tm.stats %}
-									<td>{{stat.value}}</td>
-								{% endfor %}
-							</tr>
+						{% if config.nameStyle === "short" %}
+							<td>{{tm.team.shortDisplayName}}</td>
+						{% elseif config.nameStyle === "full" %}
+							<td>{{tm.team.displayName}}</td>
+						{% elseif config.nameStyle === "abbreviation" %}
+							<td>{{tm.team.abbreviation}}</td>
+						{% endif %}
+						{% for stat in tm.stats %}
+							<td>{{stat.value}}</td>
 						{% endfor %}
-					{% endif %}
-					{% endif %}
+					</tr>
 				{% endfor %}
+			{% endif %}
 			{% endif %}
 		{% endfor %}
 	</table>

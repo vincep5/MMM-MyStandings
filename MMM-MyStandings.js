@@ -12,10 +12,12 @@ Module.register("MMM-MyStandings",{
 			{ league: "NBA", groups: ["Atlantic", "Central", "Southeast", "Northwest", "Pacific", "Southwest"] },
 			{ league: "MLB", groups: ["American League East", "American League Central", "American League West", "National League East", "National League Central", "National League West"] },
 			{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West", "NFC East", "NFC North", "NFC South", "NFC West"] },
-			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] }
+			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] },
+			{ league: "MLS", groups: ["Eastern Conference", "Western Conference"] }
 		],
 		nameStyle: "short", // "abbreviation", "full", or "short"
 		showLogos: true,
+		useLocalLogos: true, // true, then display logos from folder.  false, then display logos from the ESPN url
 		showByDivision: true, // true, then display one division at a time.  false, display all divisions per sport
 		fadeSpeed: 2000,
 	},
@@ -105,17 +107,20 @@ Module.register("MMM-MyStandings",{
 		for (var i = 0; i < this.config.sports.length; i++) {
 			switch (this.config.sports[i].league) {
 				case "MLB":
-				sport = "baseball/mlb/standings?level=3&sort=gamesbehind:asc,winpercent:desc";
-				break;
+					sport = "baseball/mlb/standings?level=3&sort=gamesbehind:asc,winpercent:desc";
+					break;
 				case "NBA":
-				sport = "basketball/nba/standings?level=3&sort=gamesbehind:asc,winpercent:desc";
-				break;
+					sport = "basketball/nba/standings?level=3&sort=gamesbehind:asc,winpercent:desc";
+					break;
 				case "NFL":
-				sport = "football/nfl/standings?level=3&sort=winpercent:desc,playoffseed:asc";
-				break;
+					sport = "football/nfl/standings?level=3&sort=winpercent:desc,playoffseed:asc";
+					break;
 				case "NHL":
-				sport = "hockey/nhl/standings?level=3&sort=points:desc,winpercent:desc,playoffseed:asc";
-				break;
+					sport = "hockey/nhl/standings?level=3&sort=points:desc,winpercent:desc,playoffseed:asc";
+					break;
+				case "MLS":
+					sport = "soccer/usa.1/standings?sort=rank:asc";
+					break;
 			}
 
 			this.sendSocketNotification("STANDINGS_RESULT", this.config.url + sport);
@@ -182,180 +187,234 @@ Module.register("MMM-MyStandings",{
 	// For sake of size of the arrays, let us remove items that we do not particularly care about
 	cleanupData: function(standingsObject, sport) {
 		var g,h,i,j;
-		//leagues or conferences
+		var formattedStandingsObject = [];
+
+		//leagues or conferences - extract out the division
 		for (g = 0; g < standingsObject.length; g++) {
-			//divisions
-			for (h = 0; h < standingsObject[g].children.length; h++) {
-				var hasMatch = false;
-
-				// We only want to show divisions/groups that we have configured
-				for (var league in this.config.sports) {
-					if (this.config.sports[league].league === sport) {
-						if (this.config.sports[league].groups !== undefined && this.config.sports[league].groups.includes(standingsObject[g].children[h].name)) {
-							hasMatch = true;
-						}
-					}
-				}
-
-				if (hasMatch === false) {
-					standingsObject[g].children[h] = null;
-					continue;
-				}
-
-				//teams
-				for (i = 0; i < standingsObject[g].children[h].standings.entries.length; i++) {
-					var newStats = [];
-					//records
-					for (j = 0; j < standingsObject[g].children[h].standings.entries[i].stats.length; j++) {
-						var newEntry = [];
-						var entry = standingsObject[g].children[h].standings.entries[i].stats[j];
-
-						if (sport === 'NHL')
-						{
-							switch (entry.name) {
-								case "wins":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 1,
-									value: newEntry
-								});
-								break;
-								case "losses":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 2,
-									value: newEntry
-								});
-								break;
-								case "otLosses":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 3,
-									value: newEntry
-								});
-								break;
-								case "points":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 4,
-									value: newEntry
-								});
-								break;
-							}
-						}
-						else if (sport === 'MLB')
-						{
-							switch (entry.name) {
-								case "wins":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 1,
-									value: newEntry
-								});
-								break;
-								case "losses":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 2,
-									value: newEntry
-								});
-								break;
-								case "gamesBehind":
-								newEntry.name = entry.name;
-								newEntry.value = entry.displayValue;
-								newStats.push({
-									key: 3,
-									value: newEntry
-								});
-								break;
-							}
-						}
-						else if (sport === 'NBA')
-						{
-							switch (entry.name) {
-								case "wins":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 1,
-									value: newEntry
-								});
-								break;
-								case "losses":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 2,
-									value: newEntry
-								});
-								break;
-								case "gamesBehind":
-								newEntry.name = entry.name;
-								newEntry.value = entry.displayValue;
-								newStats.push({
-									key: 3,
-									value: newEntry
-								});
-								break;
-							}
-						}
-						else if (sport === 'NFL')
-						{
-							switch (entry.name) {
-								case "wins":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 1,
-									value: newEntry
-								});
-								break;
-								case "losses":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 2,
-									value: newEntry
-								});
-								break;
-								case "ties":
-								newEntry.name = entry.name;
-								newEntry.value = entry.value;
-								newStats.push({
-									key: 3,
-									value: newEntry
-								});
-								break;
-							}
-						}
-					}
-
-					// Sort these to help display in the correct order
-					function sortByKey(array, key) {
-						return array.sort(function(a, b) {
-							var x = a[key]; var y = b[key];
-							return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-						});
-					}
-
-					newStats = sortByKey(newStats, 'key');
-
-					var finalValues = [];
-					for (var key in newStats) {
-						finalValues.push(newStats[key].value);
-					}
-
-					standingsObject[g].children[h].standings.entries[i].stats = finalValues;
+			if (standingsObject[g].children !== undefined) {
+				for (h = 0; h < standingsObject[g].children.length; h++) {
+					formattedStandingsObject.push(standingsObject[g].children[h]);
 				}
 			}
 		}
 
-		return standingsObject;
+		if (formattedStandingsObject.length === 0) {
+			formattedStandingsObject = standingsObject;
+		}
+
+		//division
+		for (h = 0; h < formattedStandingsObject.length; h++) {
+			var hasMatch = false;
+
+			// We only want to show divisions/groups that we have configured
+			for (var league in this.config.sports) {
+				if (this.config.sports[league].league === sport) {
+					if (this.config.sports[league].groups !== undefined && this.config.sports[league].groups.includes(formattedStandingsObject[h].name)) {
+						hasMatch = true;
+					}
+				}
+			}
+
+			if (hasMatch === false) {
+				formattedStandingsObject[h] = null;
+				continue;
+			}
+
+			//teams
+			for (i = 0; i < formattedStandingsObject[h].standings.entries.length; i++) {
+				if (this.config.useLocalLogos === true) {
+					var team = formattedStandingsObject[h].standings.entries[i].team;
+					team.logos[0].href = this.file("logos/" + sport + "/" + team.abbreviation + ".svg");
+				}
+
+				var newStats = [];
+				//records
+				for (j = 0; j < formattedStandingsObject[h].standings.entries[i].stats.length; j++) {
+					var newEntry = [];
+					var entry = formattedStandingsObject[h].standings.entries[i].stats[j];
+
+					if (sport === 'NHL')
+					{
+						switch (entry.name) {
+							case "wins":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 1,
+								value: newEntry
+							});
+							break;
+							case "losses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 2,
+								value: newEntry
+							});
+							break;
+							case "otLosses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 3,
+								value: newEntry
+							});
+							break;
+							case "points":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 4,
+								value: newEntry
+							});
+							break;
+						}
+					}
+					else if (sport === 'MLB')
+					{
+						switch (entry.name) {
+							case "wins":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 1,
+								value: newEntry
+							});
+							break;
+							case "losses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 2,
+								value: newEntry
+							});
+							break;
+							case "gamesBehind":
+							newEntry.name = entry.name;
+							newEntry.value = entry.displayValue;
+							newStats.push({
+								key: 3,
+								value: newEntry
+							});
+							break;
+						}
+					}
+					else if (sport === 'NBA')
+					{
+						switch (entry.name) {
+							case "wins":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 1,
+								value: newEntry
+							});
+							break;
+							case "losses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 2,
+								value: newEntry
+							});
+							break;
+							case "gamesBehind":
+							newEntry.name = entry.name;
+							newEntry.value = entry.displayValue;
+							newStats.push({
+								key: 3,
+								value: newEntry
+							});
+							break;
+						}
+					}
+					else if (sport === 'NFL')
+					{
+						switch (entry.name) {
+							case "wins":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 1,
+								value: newEntry
+							});
+							break;
+							case "losses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 2,
+								value: newEntry
+							});
+							break;
+							case "ties":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 3,
+								value: newEntry
+							});
+							break;
+						}
+					}
+					else if (sport === 'MLS')
+					{
+						switch (entry.name) {
+							case "wins":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 1,
+								value: newEntry
+							});
+							break;
+							case "ties":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 2,
+								value: newEntry
+							});
+							break;
+							case "losses":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 3,
+								value: newEntry
+							});
+							break;
+							case "points":
+							newEntry.name = entry.name;
+							newEntry.value = entry.value;
+							newStats.push({
+								key: 4,
+								value: newEntry
+							});
+							break;
+						}
+					}
+				}
+
+				// Sort these to help display in the correct order
+				function sortByKey(array, key) {
+					return array.sort(function(a, b) {
+						var x = a[key]; var y = b[key];
+						return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+					});
+				}
+
+				newStats = sortByKey(newStats, 'key');
+
+				var finalValues = [];
+				for (var key in newStats) {
+					finalValues.push(newStats[key].value);
+				}
+
+				formattedStandingsObject[h].standings.entries[i].stats = finalValues;
+			}
+		}
+
+		return formattedStandingsObject;
 	}
 });
