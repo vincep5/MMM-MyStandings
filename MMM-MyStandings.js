@@ -5,7 +5,7 @@ Module.register("MMM-MyStandings",{
 	defaults: {
 		updateInterval: 60 * 60 * 1000, // every 60 minutes
 		rotateInterval: 1 * 60 * 1000, // every 1 minute
-		initialLoadDelay: 15 * 1000, // 15 second initial load delay
+		initialLoadDelay: 10 * 1000, // 10 second initial load delay
 		lang: config.language,
 		url: "http://site.web.api.espn.com/apis/v2/sports/",
 		sports: [
@@ -31,6 +31,7 @@ Module.register("MMM-MyStandings",{
 	currentSport: null,
 	currentDivision: null,
 	isLoaded: false,
+	hasMoreDivisions: false,
 
 	// Start the module.
 	start: function () {
@@ -46,8 +47,10 @@ Module.register("MMM-MyStandings",{
 			}
 		}
 
+		// Get initial API data
 		this.getData(false);
-		// Schedule the first update.
+
+		// Schedule the API data update.
 		this.scheduleUpdate();
 
 		// Schedule the first UI load
@@ -96,6 +99,7 @@ Module.register("MMM-MyStandings",{
 	},
 
 	getData: function (clearAll) {
+		// When we want to refresh data from the API call
 		if (clearAll === true) {
 			this.standingsInfo = [];
 			this.standingsSportInfo = [];
@@ -135,7 +139,7 @@ Module.register("MMM-MyStandings",{
 	},
 
 	rotateStandings: function() {
-		// If we don't have any data, do not try to load the UI
+		// If we do not have any data, do not try to load the UI
 		if (this.standingsInfo === undefined || this.standingsInfo === null || this.standingsInfo.length === 0) {
 			return;
 		}
@@ -149,7 +153,7 @@ Module.register("MMM-MyStandings",{
 
 		if (this.config.showByDivision) {
 			// If we only have 1 sport and 1 division, load it once and then do not try re loading again.
-			if (this.isLoaded === true && this.standingsInfo.length === 1 && this.ctDivision === 0) {
+			if (this.isLoaded === true && this.standingsInfo.length === 1 && this.ctDivision === 0 && this.hasMoreDivisions === false) {
 				return;
 			}
 
@@ -157,17 +161,22 @@ Module.register("MMM-MyStandings",{
 
 			for (var league in this.config.sports) {
 				if (this.config.sports[league].league === this.currentSport) {
+					this.currentDivision = this.config.sports[league].groups[this.ctDivision];
+
 					if (this.ctDivision === this.config.sports[league].groups.length - 1) {
 						isLastDivisionInSport = true;
+					}
+					if (this.config.sports[league].groups.length > 1) {
+						this.hasMoreDivisions = true;
 					}
 				}
 			}
 
-			this.currentDivision = this.config.sports[this.ctRotate].groups[this.ctDivision];
 			this.updateDom(this.config.fadeSpeed);
 			this.isLoaded = true;
 			this.ctDivision = this.ctDivision + 1;
 
+			// Reset the division and increment the rotate when we reach the last division in a sport
 			if (isLastDivisionInSport) {
 				this.ctDivision = 0;
 				this.ctRotate = this.ctRotate + 1;
