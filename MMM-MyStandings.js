@@ -13,7 +13,11 @@ Module.register("MMM-MyStandings",{
 			{ league: "MLB", groups: ["American League East", "American League Central", "American League West", "National League East", "National League Central", "National League West"] },
 			{ league: "NFL", groups: ["AFC East", "AFC North", "AFC South", "AFC West", "NFC East", "NFC North", "NFC South", "NFC West"] },
 			{ league: "NHL", groups: ["Atlantic Division", "Metropolitan Division", "Central Division", "Pacific Division"] },
-			{ league: "MLS", groups: ["Eastern Conference", "Western Conference"] }
+			{ league: "MLS", groups: ["Eastern Conference", "Western Conference"] },
+			{ league: "NCAAF", groups: ["American Athletic - East", "American Athletic - West", "Atlantic Coast Conference - Atlantic", "Atlantic Coast Conference - Coastal",
+										"Big 12 Conference", "Big Ten - East", "Big Ten - West", "Conference USA - East", "Conference USA - West",
+										"FBS Independents", "Mid-American - East", "Mid-American - West", "Mountain West - Mountain", "Mountain West - West",
+										"Pac 12 - North", "Pac 12 - South", "SEC - East", "SEC - West", "Sun Belt - East", "Sun Belt - West"] }
 		],
 		nameStyle: "short", // "abbreviation", "full", or "short"
 		showLogos: true,
@@ -125,6 +129,9 @@ Module.register("MMM-MyStandings",{
 				case "MLS":
 					sport = "soccer/usa.1/standings?sort=rank:asc";
 					break;
+				case "NCAAF":
+					sport = "football/college-football/standings?group=80&level=3&sort=leaguewinpercent:desc,vsconf_wins:desc,vsconf_gamesbehind:asc,vsconf_playoffseed:asc,wins:desc,losses:desc,playoffseed:asc,alpha:asc";
+					break;
 			}
 
 			this.sendSocketNotification("STANDINGS_RESULT", this.config.url + sport);
@@ -133,8 +140,18 @@ Module.register("MMM-MyStandings",{
 
 	socketNotificationReceived: function(notification, payload) {
 		if (notification === "STANDINGS_RESULT") {
-			this.standingsInfo.push(this.cleanupData(payload.children, payload.abbreviation));
-			this.standingsSportInfo.push(payload.abbreviation);
+			var abbr;
+
+			if (payload.abbreviation === undefined) {
+				if (payload.name === 'FBS (I-A)') {
+					abbr = "NCAAF";
+				}
+			} else {
+				abbr = payload.abbreviation;
+			}
+
+			this.standingsInfo.push(this.cleanupData(payload.children, abbr));
+			this.standingsSportInfo.push(abbr);
 		}
 	},
 
@@ -197,6 +214,11 @@ Module.register("MMM-MyStandings",{
 	cleanupData: function(standingsObject, sport) {
 		var g,h,i,j;
 		var formattedStandingsObject = [];
+		var imageType = ".svg";
+
+		if (sport === 'NCAAF') {
+			imageType = ".png";
+		}
 
 		//leagues or conferences - extract out the division
 		for (g = 0; g < standingsObject.length; g++) {
@@ -204,6 +226,8 @@ Module.register("MMM-MyStandings",{
 				for (h = 0; h < standingsObject[g].children.length; h++) {
 					formattedStandingsObject.push(standingsObject[g].children[h]);
 				}
+			} else if (standingsObject[g].standings !== undefined) {
+				formattedStandingsObject.push(standingsObject[g]);
 			}
 		}
 
@@ -233,7 +257,7 @@ Module.register("MMM-MyStandings",{
 			for (i = 0; i < formattedStandingsObject[h].standings.entries.length; i++) {
 				if (this.config.useLocalLogos === true) {
 					var team = formattedStandingsObject[h].standings.entries[i].team;
-					team.logos[0].href = this.file("logos/" + sport + "/" + team.abbreviation + ".svg");
+					team.logos[0].href = this.file("logos/" + sport + "/" + team.abbreviation + imageType);
 				}
 
 				var newStats = [];
@@ -246,161 +270,182 @@ Module.register("MMM-MyStandings",{
 					{
 						switch (entry.name) {
 							case "wins":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 1,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
 							case "losses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 2,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 							case "otLosses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 3,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 3,
+									value: newEntry
+								});
+								break;
 							case "points":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 4,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 4,
+									value: newEntry
+								});
+								break;
 						}
 					}
 					else if (sport === 'MLB')
 					{
 						switch (entry.name) {
 							case "wins":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 1,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
 							case "losses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 2,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 							case "gamesBehind":
-							newEntry.name = entry.name;
-							newEntry.value = entry.displayValue;
-							newStats.push({
-								key: 3,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.displayValue;
+								newStats.push({
+									key: 3,
+									value: newEntry
+								});
+								break;
 						}
 					}
 					else if (sport === 'NBA')
 					{
 						switch (entry.name) {
 							case "wins":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 1,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
 							case "losses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 2,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 							case "gamesBehind":
-							newEntry.name = entry.name;
-							newEntry.value = entry.displayValue;
-							newStats.push({
-								key: 3,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.displayValue;
+								newStats.push({
+									key: 3,
+									value: newEntry
+								});
+								break;
 						}
 					}
 					else if (sport === 'NFL')
 					{
 						switch (entry.name) {
 							case "wins":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 1,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
 							case "losses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 2,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 							case "ties":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 3,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 3,
+									value: newEntry
+								});
+								break;
 						}
 					}
 					else if (sport === 'MLS')
 					{
 						switch (entry.name) {
 							case "wins":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 1,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
 							case "ties":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 2,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 							case "losses":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 3,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 3,
+									value: newEntry
+								});
+								break;
 							case "points":
-							newEntry.name = entry.name;
-							newEntry.value = entry.value;
-							newStats.push({
-								key: 4,
-								value: newEntry
-							});
-							break;
+								newEntry.name = entry.name;
+								newEntry.value = entry.value;
+								newStats.push({
+									key: 4,
+									value: newEntry
+								});
+								break;
+						}
+					}
+					else if (sport === 'NCAAF')
+					{
+						switch (entry.name) {
+							case "vsConf":
+								newEntry.name = entry.displayName;
+								newEntry.value = entry.displayValue;
+								newStats.push({
+									key: 1,
+									value: newEntry
+								});
+								break;
+							case "overall":
+								newEntry.name = entry.displayName;
+								newEntry.value = entry.displayValue;
+								newStats.push({
+									key: 2,
+									value: newEntry
+								});
+								break;
 						}
 					}
 				}

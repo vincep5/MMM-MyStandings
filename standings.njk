@@ -7,14 +7,16 @@
 					<td colspan="2"><span>{% if division.shortName !== undefined %}{{division.shortName}}{% else %}{{division.name}}{% endif %}</span></td>
 				{% if currentSport === "NHL" %}
 					<td>W</td><td>L</td><td>OTL</td><td>PTS</td>
-				{% elseif currentSport === "MLB"%}
+				{% elseif currentSport === "MLB" %}
 					<td>W</td><td>L</td><td>GB</td>
-				{% elseif currentSport === "NBA"%}
+				{% elseif currentSport === "NBA" %}
 					<td>W</td><td>L</td><td>GB</td>
-				{% elseif currentSport === "NFL"%}
+				{% elseif currentSport === "NFL" %}
 					<td>W</td><td>L</td><td>T</td>
-				{% elseif currentSport === "MLS"%}
+				{% elseif currentSport === "MLS" %}
 					<td>W</td><td>T</td><td>L</td><td>PTS</td>
+				{% elseif currentSport === "NCAAF" %}
+					<td>Conf</td><td>Overall</td>
 				{% endif %}
 				</tr>
 				{% for tm in division.standings.entries %}
