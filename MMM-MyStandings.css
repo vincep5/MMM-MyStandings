@@ -49,3 +49,8 @@
 	position: relative;
 	right: -2px;
 }
+
+.MMM-MyStandings .bold {
+	font-weight: bold;
+	padding-left: 10px;
+}
