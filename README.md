@@ -15,6 +15,10 @@ Go to your MagicMirror modules directory by entering `cd MagicMirror/modules`
 
 run `git clone https://github.com/vincep5/MMM-MyStandings`
 
+run `cd MMM-MyStandings` to get into the newly created folder
+
+run `npm install` to install the dependencies
+
 ## Config
 Add `MMM-MyStandings` module to the `modules` array in the `config/config.js` file:
 ````javascript

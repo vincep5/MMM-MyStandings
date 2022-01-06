@@ -1,0 +1,9 @@
+{
+  "name": "MMM-MyStandings",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "dependencies": {
+    "request" : "^2.88.2"
+  }
+}
